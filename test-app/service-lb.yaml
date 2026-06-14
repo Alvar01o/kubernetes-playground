@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-app-lb
+spec:
+  type: LoadBalancer
+  selector:
+    # Must match the labels defined in pod.yaml
+    app: test-app
+  ports:
+    - protocol: TCP
+      port: 80        # Port exposed externally by the LoadBalancer
+      targetPort: 3000  # Port the container listens on

@@ -80,3 +80,32 @@ curl http://localhost:3000
 > so Minikube picks up the updated version.
 
 ---
+
+## sudo kubectl: command not found
+
+**Error:**
+```
+sudo: kubectl: command not found
+```
+
+**Cause:**  
+`kubectl` is defined as a shell alias (`alias kubectl="minikube kubectl --"`). `sudo`
+does not inherit shell aliases, so it cannot find the command.
+
+**Fix — use `-E` to preserve your environment:**
+
+```bash
+sudo -E minikube kubectl -- port-forward service/test-app-lb 80:80
+```
+
+> `-E` tells `sudo` to keep the current user's environment variables, including
+> `$HOME` and `$KUBECONFIG`, so Minikube can find the cluster config at `~/.kube/config`.
+
+**Why not `sudo minikube kubectl --` without `-E`?**  
+Without `-E`, `sudo` switches to root and looks for the kubeconfig at `/root/.kube/config`,
+which does not exist, resulting in:
+```
+error: no server found for cluster "minikube"
+```
+
+---
