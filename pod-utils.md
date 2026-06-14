@@ -76,6 +76,26 @@ kubectl exec <pod-name> -- <command>
 
 ---
 
+## Attach to a Pod
+
+`attach` connects your terminal directly to the main process already running inside the container (stdin/stdout/stderr). Unlike `exec`, it does not start a new process.
+
+```bash
+# Attach to the main process of a running pod
+kubectl attach <pod-name>
+
+# Attach interactively (required if the process reads from stdin)
+kubectl attach -it <pod-name>
+
+# Attach to a specific container in a multi-container pod
+kubectl attach -it <pod-name> -c <container-name>
+```
+
+> Use `exec` when you need a shell or to run a command. Use `attach` when you want
+> to observe or interact with the process that is already running (e.g. a REPL or CLI app).
+
+---
+
 ## Port Forwarding
 
 ```bash
@@ -118,6 +138,55 @@ kubectl cp <pod-name>:<path/in/pod> <local-path>
 # Copy a file from your local machine into a pod
 kubectl cp <local-path> <pod-name>:<path/in/pod>
 ```
+
+---
+
+## Access an Unexposed Pod via Telnet (from inside the cluster)
+
+When a pod has no Service exposing it, it is only reachable from within the cluster's internal network. You can reach it by SSHing into the Minikube node and using `telnet` to connect directly to the pod's IP.
+
+**Step 1 — Get the pod's internal IP:**
+
+```bash
+kubectl get pod test-app -o wide
+# NAME       READY   STATUS    RESTARTS   AGE   IP           NODE
+# test-app   1/1     Running   0          5m    10.244.0.x   minikube
+```
+
+**Step 2 — SSH into the Minikube node:**
+
+```bash
+minikube ssh
+```
+
+**Step 3 — Telnet to the pod IP on the app port:**
+
+```bash
+telnet 10.244.0.x 3000
+```
+
+**Step 4 — Send a raw HTTP request manually:**
+
+```
+GET / HTTP/1.0
+Host: 10.244.0.x
+
+```
+
+> Press **Enter twice** after the Host line to send the request.
+> The server will return the HTTP response and close the connection.
+
+Expected response:
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+...
+
+{"message":"testing kubernetes"}
+```
+
+> This technique is useful to verify network connectivity and that the app is
+> responding inside the cluster, before creating a Service or port-forward.
 
 ---
 
