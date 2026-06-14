@@ -2,7 +2,7 @@
 
 Guide to deploying and exposing a sample application on a local Minikube cluster.
 
-> **Prerequisite:** Minikube is running. See [installation.md](installation.md) if not.
+> **Prerequisite:** Minikube is running. See [01-INSTALLATION.md](01-INSTALLATION.md) if not.
 
 ---
 

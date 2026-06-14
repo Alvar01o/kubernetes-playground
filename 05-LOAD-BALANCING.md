@@ -2,7 +2,7 @@
 
 Exposing the `test-app` pod behind a Kubernetes LoadBalancer Service in Minikube.
 
-> **Prerequisite:** `test-app` pod is running. See [installation.md](installation.md) and [deployment.minikube.md](deployment.minikube.md).
+> **Prerequisite:** `test-app` pod is running. See [01-INSTALLATION.md](01-INSTALLATION.md) and [03-DEPLOYMENT.md](03-DEPLOYMENT.md).
 
 ---
 
