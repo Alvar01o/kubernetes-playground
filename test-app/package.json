@@ -1,0 +1,9 @@
+{
+  "name": "test-app",
+  "version": "1.0.0",
+  "description": "Simple Node.js app for Kubernetes testing",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  }
+}
