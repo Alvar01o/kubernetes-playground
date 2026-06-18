@@ -14,6 +14,8 @@ A local Kubernetes environment built with [Minikube](https://minikube.sigs.k8s.i
 | 4 | [04-POD-COMMANDS.md](04-POD-COMMANDS.md) | Useful kubectl commands to manage pods |
 | 5 | [05-LOAD-BALANCING.md](05-LOAD-BALANCING.md) | Expose the app through a LoadBalancer Service |
 | 6 | [06-TROUBLESHOOTING.md](06-TROUBLESHOOTING.md) | Common issues and fixes encountered along the way |
+| 7 | [07-SCALING.md](07-SCALING.md) | Scale replicas up and down using a ReplicaSet |
+| 8 | [08-DEPLOYMENT-COMMANDS.md](08-DEPLOYMENT-COMMANDS.md) | kubectl commands for Deployments: scaling, rolling updates, rollbacks |
 
 ---
 
@@ -59,13 +61,16 @@ kubernetes-playground/
 │   ├── package.json
 │   ├── Dockerfile
 │   ├── pod.yaml          # Pod definition
+│   ├── replicaset.yaml   # ReplicaSet definition (2 replicas)
 │   └── service-lb.yaml   # LoadBalancer Service definition
 ├── 01-INSTALLATION.md
 ├── 02-DOCKERIZING.md
 ├── 03-DEPLOYMENT.md
 ├── 04-POD-COMMANDS.md
 ├── 05-LOAD-BALANCING.md
-└── 06-TROUBLESHOOTING.md
+├── 06-TROUBLESHOOTING.md
+├── 07-SCALING.md
+└── 08-DEPLOYMENT-COMMANDS.md
 ```
 
 ---
