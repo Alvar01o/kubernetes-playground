@@ -165,7 +165,7 @@ kubectl top pod nginx-pod
 
 Los *Deployments* son la forma recomendada de gestionar aplicaciones sin estado en Kubernetes. Proporcionan:
 - Declaración del número deseado de réplicas (replicas) para alta disponibilidad.
-- Estrategias de actualización (rolling update, recreate) para despliegues con mínimo downtime.
+- Estrategias de actualización (rolling   update, recreate) para despliegues con mínimo downtime.
 - Un historial de revisiones que permite hacer *rollbacks* en caso de fallos.
 
 Conceptos clave:
