@@ -10,16 +10,17 @@
 
 1. [Introducción a Kubernetes](#introducción-a-kubernetes)
 2. [Conceptos Fundamentales](#conceptos-fundamentales)
-3. [Instalación y Configuración](#instalación-y-configuración)
-4. [Pods y Contenedores](#pods-y-contenedores)
-5. [Deployments](#deployments)
-6. [Services](#services)
-7. [Almacenamiento](#almacenamiento)
-8. [Configuración y Secretos](#configuración-y-secretos)
-9. [Escalado y Autoscaling](#escalado-y-autoscaling)
-10. [Ingress y Networking](#ingress-y-networking)
-11. [Administración y RBAC](#administración-y-rbac)
-12. [Monitoreo y Troubleshooting](#monitoreo-y-troubleshooting)
+3. [Tipos de Objetos en Kubernetes](#tipos-de-objetos-en-kubernetes)
+4. [Instalación y Configuración](#instalación-y-configuración)
+5. [Pods y Contenedores](#pods-y-contenedores)
+6. [Deployments](#deployments)
+7. [Services](#services)
+8. [Almacenamiento](#almacenamiento)
+9. [Configuración y Secretos](#configuración-y-secretos)
+10. [Escalado y Autoscaling](#escalado-y-autoscaling)
+11. [Ingress y Networking](#ingress-y-networking)
+12. [Administración y RBAC](#administración-y-rbac)
+13. [Monitoreo y Troubleshooting](#monitoreo-y-troubleshooting)
 
 ---
 
@@ -285,6 +286,105 @@ kubectl get events
 # Inspeccionar details
 kubectl describe deployment web-app
 ```
+
+---
+
+## Tipos de Objetos en Kubernetes
+
+Todo lo que gestionas en Kubernetes es un **objeto** (o *recurso*): una entidad declarativa definida en YAML/JSON e identificada por su `apiVersion` y `kind`, que representa un estado deseado que el clúster se encarga de mantener. Los objetos se agrupan en categorías según el problema que resuelven: ejecutar cargas de trabajo, exponer red, persistir datos, gestionar configuración, controlar acceso o escalar automáticamente.
+
+```bash
+# Listar todos los tipos de objetos (kinds) disponibles en el cluster
+kubectl api-resources
+
+# Filtrar solo los que aceptan namespace
+kubectl api-resources --namespaced=true
+
+# Ver a qué apiVersion pertenece un kind específico
+kubectl explain deployment
+kubectl explain deployment.spec.strategy
+```
+
+### 1. Workloads (Cargas de Trabajo)
+
+Definen cómo se ejecutan los contenedores.
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **Pod** | Unidad mínima desplegable; uno o más contenedores que comparten red y almacenamiento | Rara vez se crea directamente; casi siempre gestionado por un controlador |
+| **ReplicaSet** | Garantiza que un número fijo de réplicas de un Pod estén corriendo | Casi nunca directo; lo gestiona un Deployment |
+| **Deployment** | Gestiona ReplicaSets, permite rolling updates y rollbacks | Apps sin estado (stateless): APIs, web, workers |
+| **StatefulSet** | Como un Deployment, pero con identidad de red y almacenamiento estable por réplica | Apps con estado (stateful): bases de datos, colas |
+| **DaemonSet** | Asegura que una copia del Pod corra en todos (o algunos) los nodos | Agentes de nodo: logging, monitoreo, CNI, antivirus |
+| **Job** | Ejecuta Pods hasta completar una tarea exitosamente N veces | Tareas puntuales: migraciones, batch processing |
+| **CronJob** | Crea Jobs según una calendarización tipo cron | Tareas periódicas: backups, reportes, limpieza |
+
+### 2. Networking (Red)
+
+Controlan cómo se comunican los Pods entre sí y con el exterior.
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **Service** | Expone un conjunto de Pods bajo una IP/DNS estable (ClusterIP, NodePort, LoadBalancer) | Descubrimiento y balanceo de carga interno/externo |
+| **Ingress** | Enruta tráfico HTTP/HTTPS externo hacia Services según host/path | Exponer múltiples servicios bajo un mismo punto de entrada |
+| **NetworkPolicy** | Define reglas de firewall a nivel de Pod (qué tráfico entra/sale) | Aislar namespaces o restringir comunicación entre apps |
+| **Endpoints / EndpointSlice** | Lista las IPs de los Pods que respaldan a un Service | Generado automáticamente; útil para debugging |
+
+### 3. Almacenamiento
+
+Gestionan la persistencia y el acceso a datos.
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **Volume** | Almacenamiento asociado al ciclo de vida de un Pod (`emptyDir`, `configMap`, etc.) | Compartir archivos entre contenedores de un mismo Pod, cache temporal |
+| **PersistentVolume (PV)** | Recurso de almacenamiento físico/cloud provisionado en el clúster | Lo suele crear el administrador o un provisioner dinámico |
+| **PersistentVolumeClaim (PVC)** | Solicitud de almacenamiento hecha por una app; se enlaza a un PV | Pedir disco persistente para bases de datos, uploads, etc. |
+| **StorageClass** | Define cómo se aprovisiona dinámicamente el almacenamiento (tipo de disco, proveedor) | Automatizar la creación de PVs bajo demanda (EBS, GCE PD, etc.) |
+
+### 4. Configuración
+
+Separan la configuración del código de la aplicación.
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **ConfigMap** | Almacena datos de configuración no sensibles (pares clave/valor o archivos) | Variables de entorno, archivos de configuración |
+| **Secret** | Igual que ConfigMap, pero pensado para datos sensibles (codificados en base64) | Contraseñas, tokens, llaves, credenciales de registry |
+
+### 5. Seguridad y Control de Acceso (RBAC)
+
+Definen quién puede hacer qué dentro del clúster.
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **ServiceAccount** | Identidad que usan los Pods para autenticarse ante la API de Kubernetes | Dar permisos específicos a una app (ej. acceso de lectura a Secrets) |
+| **Role / ClusterRole** | Define un conjunto de permisos (verbos sobre recursos) a nivel namespace o clúster | Restringir qué puede hacer un usuario o ServiceAccount |
+| **RoleBinding / ClusterRoleBinding** | Asocia un Role/ClusterRole a un usuario, grupo o ServiceAccount | Otorgar efectivamente los permisos definidos en un Role |
+
+### 6. Escalado y Disponibilidad
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **HorizontalPodAutoscaler (HPA)** | Escala el número de réplicas según métricas (CPU, memoria, custom) | Apps con carga variable que necesitan escalar solas |
+| **VerticalPodAutoscaler (VPA)** | Ajusta automáticamente `requests`/`limits` de los Pods (requiere addon aparte) | Optimizar recursos cuando no se conoce el consumo real de antemano |
+| **PodDisruptionBudget (PDB)** | Limita cuántos Pods pueden estar caídos a la vez durante mantenimiento voluntario | Garantizar disponibilidad mínima durante drenados de nodos o updates |
+
+### 7. Organización del Clúster
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **Namespace** | Divide el clúster en espacios de nombres lógicos y aislados | Separar entornos (dev/staging/prod) o equipos/proyectos |
+| **ResourceQuota** | Limita el consumo total de recursos (CPU, memoria, cantidad de objetos) por namespace | Evitar que un equipo/proyecto consuma todos los recursos del clúster |
+| **LimitRange** | Define límites/valores por defecto de recursos por Pod o contenedor en un namespace | Prevenir Pods sin `resources` definidos que puedan sobrecargar nodos |
+| **Node** | Representa una máquina (física o virtual) worker del clúster | No se crea manualmente; lo registra el kubelet al unirse al clúster |
+
+### 8. Extensibilidad
+
+| Objeto | Descripción | Cuándo usarlo |
+|---|---|---|
+| **CustomResourceDefinition (CRD)** | Permite definir nuevos `kind` propios, extendiendo la API de Kubernetes | Modelar conceptos de dominio propio (ej. `Certificate`, `Backup`) |
+| **Operator** | Combina un CRD con un controlador que automatiza la gestión de ese recurso | Automatizar tareas operativas complejas (bases de datos, backups) |
+
+> 💡 **Resumen mental:** *Workloads* dicen qué correr, *Networking* dice cómo se comunica, *Almacenamiento* dice dónde persisten los datos, *Configuración* separa settings del código, *RBAC* dice quién puede tocar qué, y *Escalado*/*Organización* mantienen todo estable y ordenado a medida que el clúster crece.
 
 ---
 
